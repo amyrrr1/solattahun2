@@ -3,1090 +3,1077 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Air Slice Ninja Academy - Pendidikan Islam Tahun 2 (Solat)</title>
+    <title>Telekinesis Quiz - Mind Force (Pendidikan Islam Tahun 2)</title>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- MediaPipe Hands & Camera Utils CDN -->
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- MediaPipe Hands CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <style>
-        body {
-            font-family: 'Fredoka', 'Poppins', sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+        * {
             user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #080a14;
+            color: #ffffff;
             overflow: hidden;
         }
-
+        .font-teko {
+            font-family: 'Teko', sans-serif;
+        }
+        /* Glassmorphism Styling */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+        .glass-card {
+            background: rgba(20, 30, 55, 0.65);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(56, 189, 248, 0.25);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card.hovered {
+            border-color: #38bdf8;
+            background: rgba(14, 165, 233, 0.25);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 15px rgba(56, 189, 248, 0.3);
+            transform: translateY(-4px) scale(1.02);
+        }
+        .glass-card.slashed-correct {
+            border-color: #22c55e !important;
+            background: rgba(34, 197, 94, 0.4) !important;
+            box-shadow: 0 0 40px #22c55e !important;
+        }
+        .glass-card.slashed-wrong {
+            border-color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.4) !important;
+            box-shadow: 0 0 40px #ef4444 !important;
+        }
         /* Neon Glow Effects */
-        .glow-title {
-            text-shadow: 0 0 15px rgba(245, 158, 11, 0.8), 0 0 30px rgba(239, 68, 68, 0.6);
+        .neon-text-blue {
+            text-shadow: 0 0 10px #38bdf8, 0 0 20px #0284c7;
         }
-
-        .glow-card {
-            box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.5);
-            border: 2px solid rgba(56, 189, 248, 0.3);
+        .neon-text-gold {
+            text-shadow: 0 0 10px #fbbf24, 0 0 20px #d97706;
         }
-
-        .ninja-btn {
-            transition: all 0.2s ease;
-            box-shadow: 0 6px 0 #b91c1c;
-        }
-
-        .ninja-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 0 #b91c1c;
-        }
-
-        .ninja-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #b91c1c;
-        }
-
-        /* Pulse animation for hand tracker status */
+        /* Custom Animations */
         @keyframes pulseGlow {
-            0%, 100% { opacity: 0.4; transform: scale(1); }
-            50% { opacity: 0.9; transform: scale(1.1); }
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
         }
-
         .pulse-glow {
-            animation: pulseGlow 2s infinite;
+            animation: pulseGlow 2s infinite ease-in-out;
         }
-
-        /* Custom Scrollbar for summary table */
-        ::-webkit-scrollbar {
-            width: 8px;
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.3); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
         }
-        ::-webkit-scrollbar-track {
-            background: #1e293b;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #f59e0b;
-            border-radius: 4px;
+        .heart-beat {
+            animation: heartBeat 0.8s ease-in-out;
         }
     </style>
 </head>
-<body class="w-screen h-screen relative bg-slate-950 flex flex-col items-center justify-center m-0 p-0 overflow-hidden">
+<body class="w-screen h-screen flex flex-col justify-between items-center relative overflow-hidden bg-slate-950">
 
     <!-- HIDDEN WEBCAM VIDEO ELEMENT -->
-    <video id="webcamVideo" class="hidden" playsinline></video>
+    <video id="webcam" class="hidden" playsinline></video>
 
-    <!-- GAME CANVAS (FULLSCREEN OVERLAY) -->
-    <canvas id="gameCanvas" class="absolute inset-0 w-full h-full z-10 block bg-slate-900"></canvas>
+    <!-- BACKGROUND CANVAS (Webcam Feed + Mind Force Particles + Telekinesis Orb) -->
+    <canvas id="gameCanvas" class="absolute inset-0 w-full h-full z-0 object-cover"></canvas>
 
     <!-- UI OVERLAY LAYER -->
-    <div id="uiOverlay" class="absolute inset-0 z-20 pointer-events-none flex flex-col justify-between p-4 md:p-6">
+    <div class="relative z-10 w-full h-full flex flex-col justify-between p-4 md:p-6 pointer-events-none">
         
-        <!-- HEADER / HUD (IN-GAME) -->
-        <div id="hud" class="hidden flex flex-col md:flex-row items-center justify-between gap-3 w-full max-w-5xl mx-auto">
-            
-            <!-- LEFT: LIVES & STREAK -->
-            <div class="flex items-center gap-4 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-700 pointer-events-auto">
-                <div id="livesContainer" class="flex gap-1 text-2xl text-red-500">
-                    <i class="fa-solid fa-heart"></i>
-                    <i class="fa-solid fa-heart"></i>
-                    <i class="fa-solid fa-heart"></i>
+        <!-- HEADER HUD -->
+        <header class="w-full flex justify-between items-center glass-panel rounded-2xl px-5 py-3 pointer-events-auto">
+            <!-- Game Title / Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-xl text-white shadow-lg shadow-cyan-500/30">
+                    <i class="fa-solid me-0.5 fa-wand-magic-sparkles"></i>
                 </div>
-                <div class="h-6 w-px bg-slate-700"></div>
-                <div class="text-amber-400 font-bold text-sm md:text-base flex items-center gap-1">
-                    <i class="fa-solid fa-fire text-orange-500"></i>
-                    <span>KOMBO: <span id="comboText" class="text-white text-lg">x0</span></span>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400">
+                        TELEKINESIS QUIZ
+                    </h1>
+                    <p class="text-xs text-cyan-300/80 font-medium tracking-widest uppercase">MIND FORCE • SOLAT TAHUN 2</p>
                 </div>
             </div>
 
-            <!-- CENTER: QUESTION CARD -->
-            <div class="flex-1 w-full max-w-2xl bg-gradient-to-r from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-lg px-6 py-3 rounded-2xl border-2 border-amber-500/50 shadow-xl text-center pointer-events-auto">
-                <div class="flex justify-between items-center text-xs font-semibold text-amber-400 uppercase tracking-widest mb-1">
-                    <span><i class="fa-solid fa-scroll mr-1"></i> Soalan <span id="qIndexText">1</span> / 10</span>
-                    <span id="inputModeBadge" class="bg-indigo-600/60 text-indigo-200 px-2 py-0.5 rounded-full text-[10px]">
-                        <i class="fa-solid fa-hand"></i> Hand Tracking
+            <!-- Game Stats (Score, Combo, Hearts) -->
+            <div id="hudStats" class="flex items-center space-x-4 md:space-x-8">
+                <!-- Score -->
+                <div class="text-center">
+                    <span class="text-xs text-slate-400 uppercase font-bold tracking-wider block">SKOR</span>
+                    <span id="scoreText" class="text-2xl md:text-3xl font-teko font-bold text-amber-300 neon-text-gold tracking-wide">0</span>
+                </div>
+
+                <!-- Combo Multiplier -->
+                <div class="text-center">
+                    <span class="text-xs text-slate-400 uppercase font-bold tracking-wider block">KOMBO</span>
+                    <span id="comboText" class="text-xl md:text-2xl font-teko font-bold text-cyan-400 neon-text-blue">x1</span>
+                </div>
+
+                <!-- Lives (Hearts) -->
+                <div class="flex items-center space-x-1.5" id="livesContainer">
+                    <i class="fa-solid fa-heart text-2xl text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]"></i>
+                    <i class="fa-solid fa-heart text-2xl text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]"></i>
+                    <i class="fa-solid fa-heart text-2xl text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]"></i>
+                </div>
+            </div>
+
+            <!-- Control Switch & Camera Indicator -->
+            <div class="flex items-center space-x-3">
+                <button id="toggleCamBtn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs text-slate-200 font-semibold flex items-center space-x-2 transition cursor-pointer">
+                    <span id="camStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span id="camStatusText">Kamera Mod: Auto</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN QUESTION & ANSWER CONTAINER -->
+        <main id="gamePlayArea" class="w-full max-w-4xl mx-auto flex flex-col items-center justify-center space-y-6 my-auto pointer-events-auto transition-opacity duration-300">
+            
+            <!-- Question Card & Progress Indicator -->
+            <div class="w-full glass-panel rounded-3xl p-6 md:p-8 text-center relative overflow-hidden border-2 border-cyan-500/30">
+                <!-- Top Bar: Timer Progress & Question Index -->
+                <div class="flex justify-between items-center mb-4 text-xs md:text-sm font-semibold text-cyan-300">
+                    <span id="questionNumBadge" class="bg-cyan-950/80 border border-cyan-500/40 px-3 py-1 rounded-full">
+                        Soalan 1 daripada 10
+                    </span>
+                    <span id="timerText" class="text-amber-400 font-mono text-base font-bold">
+                        15s
                     </span>
                 </div>
-                <h2 id="questionText" class="text-lg md:text-xl font-bold text-white drop-shadow leading-snug">
-                    Soalan sedang dimuatkan...
+
+                <!-- Dynamic Timer Bar -->
+                <div class="w-full h-2.5 bg-slate-800/80 rounded-full overflow-hidden mb-6 border border-slate-700">
+                    <div id="timerBar" class="h-full bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-500 w-full transition-all duration-100 rounded-full"></div>
+                </div>
+
+                <!-- Question Text -->
+                <h2 id="questionText" class="text-xl md:text-3xl font-extrabold text-white leading-relaxed tracking-wide drop-shadow-md">
+                    Memuatkan soalan...
                 </h2>
             </div>
 
-            <!-- RIGHT: SCORE & TIMER -->
-            <div class="flex items-center gap-4 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-700 pointer-events-auto">
-                <div class="text-right">
-                    <div class="text-[10px] text-slate-400 font-semibold tracking-wider">SKOR</div>
-                    <div id="scoreText" class="text-2xl font-black text-amber-400">0</div>
+            <!-- 3 Answer Cards Grid -->
+            <div id="optionsGrid" class="w-full grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <!-- Option A -->
+                <div id="card-0" data-index="0" class="glass-card option-card rounded-2xl p-5 cursor-pointer flex flex-col justify-between relative overflow-hidden group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 font-black text-lg flex items-center justify-center">A</span>
+                        <i class="fa-solid fa-bolt text-cyan-400/50 group-hover:text-cyan-300"></i>
+                    </div>
+                    <p class="option-text text-base md:text-lg font-bold text-slate-100 my-2">Pilihan A</p>
+                    <div class="hover-progress-bar w-0 h-1 bg-cyan-400 rounded-full transition-all"></div>
                 </div>
-                <div class="h-8 w-8 rounded-full border-2 border-amber-500 flex items-center justify-center font-bold text-white bg-amber-500/20" id="timerCircle">
-                    <span id="timerText">20</span>
+
+                <!-- Option B -->
+                <div id="card-1" data-index="1" class="glass-card option-card rounded-2xl p-5 cursor-pointer flex flex-col justify-between relative overflow-hidden group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 font-black text-lg flex items-center justify-center">B</span>
+                        <i class="fa-solid fa-bolt text-cyan-400/50 group-hover:text-cyan-300"></i>
+                    </div>
+                    <p class="option-text text-base md:text-lg font-bold text-slate-100 my-2">Pilihan B</p>
+                    <div class="hover-progress-bar w-0 h-1 bg-cyan-400 rounded-full transition-all"></div>
+                </div>
+
+                <!-- Option C -->
+                <div id="card-2" data-index="2" class="glass-card option-card rounded-2xl p-5 cursor-pointer flex flex-col justify-between relative overflow-hidden group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 font-black text-lg flex items-center justify-center">C</span>
+                        <i class="fa-solid fa-bolt text-cyan-400/50 group-hover:text-cyan-300"></i>
+                    </div>
+                    <p class="option-text text-base md:text-lg font-bold text-slate-100 my-2">Pilihan C</p>
+                    <div class="hover-progress-bar w-0 h-1 bg-cyan-400 rounded-full transition-all"></div>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <!-- MUTE / CAM STATUS BUTTON (FLOATING TOP-RIGHT) -->
-        <div id="topControls" class="hidden absolute top-4 right-4 pointer-events-auto flex items-center gap-2 z-30">
-            <button id="btnMute" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 p-3 rounded-full border border-slate-600 transition">
-                <i id="muteIcon" class="fa-solid fa-volume-high"></i>
-            </button>
-        </div>
+        <!-- FOOTER INSTRUCTION BANNER -->
+        <footer class="w-full text-center text-xs text-cyan-200/70 glass-panel rounded-xl py-2 px-4 pointer-events-auto">
+            <span class="inline-flex items-center gap-2">
+                <i class="fa-solid fa-hand-pointer text-cyan-400"></i>
+                <b class="text-white">Isyarat Tangan:</b> Hala jari telunjuk ke soalan (cas 1.2s) ATAU temukan ibu jari & telunjuk (PINCH) untuk <b>Telekinetic Slash!</b>
+            </span>
+        </footer>
     </div>
 
-    <!-- START SCREEN MODAL -->
-    <div id="startScreen" class="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
-        <div class="bg-gradient-to-b from-slate-900 to-slate-950 max-w-lg w-full rounded-3xl border-2 border-amber-500/40 p-6 md:p-8 text-center shadow-2xl relative overflow-hidden">
-            <!-- Background Decorative Shinobi Stars -->
-            <div class="absolute -top-10 -left-10 text-slate-800/40 text-9xl pointer-events-none">
-                <i class="fa-solid fa-shuriken"></i>
-            </div>
-            <div class="absolute -bottom-10 -right-10 text-slate-800/40 text-9xl pointer-events-none">
-                <i class="fa-solid fa-shuriken"></i>
+    <!-- START OVERLAY SCREEN -->
+    <div id="startOverlay" class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+        <div class="max-w-2xl w-full glass-panel rounded-3xl p-6 md:p-8 border-2 border-cyan-500/40 text-center flex flex-col items-center space-y-6">
+            
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 flex items-center justify-center text-4xl text-white shadow-xl shadow-cyan-500/40 pulse-glow">
+                <i class="fa-solid fa-hand-sparkles"></i>
             </div>
 
-            <!-- Header Title -->
-            <div class="inline-block bg-amber-500/10 border border-amber-500/30 px-4 py-1 rounded-full text-amber-400 font-bold text-xs uppercase tracking-widest mb-3">
-                Pendidikan Islam Tahun 2 • Tajuk: Solat
+            <div>
+                <h1 class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-100 to-indigo-300 tracking-wider">
+                    TELEKINESIS QUIZ
+                </h1>
+                <p class="text-amber-400 font-bold text-lg md:text-xl font-teko tracking-widest uppercase mt-1">
+                    SUBJEK PENDIDIKAN ISLAM TAHUN 2 • TAJUK: SOLAT
+                </p>
             </div>
-            <h1 class="text-3xl md:text-5xl font-black text-amber-400 glow-title tracking-wider mb-2">
-                AIR SLICE<br><span class="text-white">NINJA ACADEMY</span>
-            </h1>
-            <p class="text-slate-300 text-sm md:text-base mb-6">
-                Gunakan <span class="text-amber-400 font-bold">Jari Telunjuk</span> anda di hadapan webcam untuk tebas/slice jawapan solat yang betul di udara!
+
+            <!-- How to Play Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-left text-sm text-slate-200">
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700/80 flex space-x-3 items-start">
+                    <div class="text-2xl text-cyan-400"><i class="fa-solid fa-hand-point-up"></i></div>
+                    <div>
+                        <h4 class="font-bold text-cyan-300">1. Kawalan Orb Minda</h4>
+                        <p class="text-xs text-slate-300 mt-1">Gerakkan jari telunjuk di hadapan kamera untuk mengawal Orb Minda berpijar.</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700/80 flex space-x-3 items-start">
+                    <div class="text-2xl text-amber-400"><i class="fa-solid fa-bolt-lightning"></i></div>
+                    <div>
+                        <h4 class="font-bold text-amber-300">2. Telekinetic Slash / Hover</h4>
+                        <p class="text-xs text-slate-300 mt-1">Gantungkan Orb selama 1.2s ATAU buat isyarat PINCH (ibu jari + telunjuk) untuk tebas jawapan!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fallback Note -->
+            <p class="text-xs text-slate-400 italic">
+                * Sekiranya kamera tidak diaktifkan, anda boleh menggunakan tetikus (mouse) atau sentuhan skrin.
             </p>
 
-            <!-- Mode Selection Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 text-left">
-                <label id="modeWebcamCard" class="cursor-pointer bg-slate-800/90 hover:bg-slate-800 border-2 border-amber-500 rounded-2xl p-3 flex items-center gap-3 transition">
-                    <input type="radio" name="controlMode" value="webcam" checked class="accent-amber-500 w-4 h-4">
-                    <div>
-                        <div class="font-bold text-white text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-video text-amber-400"></i> Kamera Webcam
-                        </div>
-                        <div class="text-[11px] text-slate-400">Kawalan Hand Gesture (Jari Telunjuk)</div>
-                    </div>
-                </label>
-
-                <label id="modeMouseCard" class="cursor-pointer bg-slate-800/50 hover:bg-slate-800 border-2 border-slate-700 rounded-2xl p-3 flex items-center gap-3 transition">
-                    <input type="radio" name="controlMode" value="mouse" class="accent-amber-500 w-4 h-4">
-                    <div>
-                        <div class="font-bold text-white text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-arrow-pointer text-indigo-400"></i> Tetikus / Sentuh
-                        </div>
-                        <div class="text-[11px] text-slate-400">Guna Mouse atau Skrin Sentuh</div>
-                    </div>
-                </label>
-            </div>
-
-            <!-- Start Game Button -->
-            <button id="btnStartGame" class="ninja-btn w-full bg-red-600 hover:bg-red-500 text-white font-extrabold text-xl py-4 rounded-2xl uppercase tracking-wider flex items-center justify-center gap-3">
-                <i class="fa-solid fa-play text-2xl"></i> Mula Permainan Ninja
+            <button id="startBtn" class="w-full md:w-auto px-10 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-extrabold text-xl shadow-lg shadow-cyan-500/50 hover:shadow-cyan-400/80 transition-all transform hover:-translate-y-1 active:translate-y-0 cursor-pointer">
+                🚀 MULA MAIN
             </button>
-
-            <!-- Camera Status Note -->
-            <div id="cameraStatusNote" class="mt-4 text-xs text-slate-400 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-circle-info text-amber-400"></i>
-                <span>Pastikan ruang mendapat pencahayaan yang cukup.</span>
-            </div>
         </div>
     </div>
 
-    <!-- RESULTS SCREEN MODAL -->
-    <div id="resultScreen" class="hidden absolute inset-0 z-40 flex items-center justify-center bg-slate-950/95 backdrop-blur-lg p-4">
-        <div class="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 max-w-2xl w-full rounded-3xl border-2 border-amber-500/50 p-6 md:p-8 text-center shadow-2xl relative max-h-[90vh] flex flex-col">
+    <!-- GAME OVER / VICTORY OVERLAY SCREEN -->
+    <div id="endOverlay" class="hidden absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-lg">
+        <div class="max-w-xl w-full glass-panel rounded-3xl p-6 md:p-8 border-2 border-amber-500/40 text-center flex flex-col items-center space-y-6">
             
-            <h2 id="resultTitle" class="text-3xl font-black text-amber-400 uppercase tracking-wider mb-1">
-                TAHNIAH, NINJA SOLAT!
-            </h2>
-            <p class="text-xs text-slate-400 mb-4">Keputusan Pentaksiran Pendidikan Islam (Solat)</p>
-
-            <!-- Star Rating Display -->
-            <div id="starContainer" class="flex justify-center gap-3 text-4xl text-amber-400 mb-4">
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
+            <!-- Result Icon Badge -->
+            <div id="endBadge" class="w-24 h-24 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-5xl text-amber-300 shadow-xl shadow-amber-500/30">
+                <i class="fa-solid fa-trophy"></i>
             </div>
 
-            <!-- Score Cards Row -->
-            <div class="grid grid-cols-3 gap-3 mb-4">
-                <div class="bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">Skor Akhir</div>
-                    <div id="resScore" class="text-2xl font-black text-amber-400">0</div>
-                </div>
-                <div class="bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">Ketepatan</div>
-                    <div id="resAccuracy" class="text-2xl font-black text-emerald-400">0%</div>
-                </div>
-                <div class="bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">Kombo Maks</div>
-                    <div id="resMaxCombo" class="text-2xl font-black text-indigo-400">0x</div>
-                </div>
+            <div>
+                <h2 id="endTitle" class="text-3xl md:text-4xl font-black text-amber-300 neon-text-gold">
+                    TAHNIAH!
+                </h2>
+                <p id="endSubtitle" class="text-slate-300 font-medium mt-1">Anda telah melengkapkan Kuiz Telekinesis Solat!</p>
             </div>
 
-            <!-- Question Breakdown Review List -->
-            <div class="flex-1 overflow-y-auto bg-slate-950/60 rounded-2xl p-3 border border-slate-800 mb-5 text-left text-xs space-y-2">
-                <div class="font-bold text-amber-400 uppercase text-[11px] mb-2 flex items-center justify-between">
-                    <span>Semakan Soalan Solat</span>
-                    <span>Status</span>
+            <!-- Stats Summary Cards -->
+            <div class="grid grid-cols-3 gap-3 w-full my-2">
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700 text-center">
+                    <span class="text-xs text-slate-400 font-bold block">JUMLAH SKOR</span>
+                    <span id="endFinalScore" class="text-2xl font-teko font-bold text-amber-300">0</span>
                 </div>
-                <div id="reviewList" class="space-y-2">
-                    <!-- Populated dynamically via JS -->
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700 text-center">
+                    <span class="text-xs text-slate-400 font-bold block">KETEPATAN</span>
+                    <span id="endAccuracy" class="text-2xl font-teko font-bold text-cyan-300">0%</span>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700 text-center">
+                    <span class="text-xs text-slate-400 font-bold block">KOMBO MAKS</span>
+                    <span id="endMaxCombo" class="text-2xl font-teko font-bold text-purple-300">x1</span>
                 </div>
             </div>
 
-            <!-- Replay & Home Buttons -->
-            <div class="flex gap-3">
-                <button id="btnReplay" class="ninja-btn flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3.5 rounded-2xl uppercase tracking-wider flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-rotate-right"></i> Main Semula
-                </button>
-                <button id="btnHome" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold py-3.5 px-6 rounded-2xl transition">
-                    <i class="fa-solid fa-house"></i>
-                </button>
+            <!-- Rank / Grade Banner -->
+            <div id="endRankBanner" class="w-full py-2 px-4 rounded-xl bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-bold text-sm">
+                Gelar Minda: PERWIRA SOLAT TELEKINESIS 🌟
             </div>
+
+            <button id="restartBtn" class="w-full md:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-lg shadow-lg shadow-amber-500/40 transition-all transform hover:-translate-y-1 cursor-pointer">
+                🔄 MAIN SEMULA
+            </button>
         </div>
     </div>
+
 
     <!-- JAVASCRIPT GAME ENGINE -->
     <script>
-        /**
-         * AIR SLICE NINJA ACADEMY
-         * Pendidikan Islam Tahun 2 - Tajuk Solat
-         */
-
-        // ----------------------------------------------------
-        // 1. DATA SOALAN PENDIDIKAN ISLAM TAHUN 2 (SOLAT)
-        // ----------------------------------------------------
-        const QUESTIONS_DATA = [
+        /* ===================================================================
+           1. GAME DATA & QUESTIONS (SOLAT - PENDIDIKAN ISLAM TAHUN 2 KSSR)
+           =================================================================== */
+        const quizData = [
             {
-                q: "Apakah rukun solat yang pertama?",
-                options: ["Niat", "Ruku'", "Salam"],
-                correct: 0
-            },
-            {
-                q: "Berapakah bilangan rakaat bagi solat Maghrib?",
+                question: "1. Berapakah bilangan rakaat bagi solat Maghrib?",
                 options: ["2 Rakaat", "3 Rakaat", "4 Rakaat"],
-                correct: 1
+                answer: 1
             },
             {
-                q: "Antara berikut, yang manakah Syarat Sah Solat?",
-                options: ["Menghadap Kiblat", "Makan & Minum", "Berjalan"],
-                correct: 0
+                question: "2. Apakah rukun solat yang pertama sekali?",
+                options: ["Niat", "Ruku'", "Salam"],
+                answer: 0
             },
             {
-                q: "Membaca Surah Al-Fatihah merupakan...",
-                options: ["Syarat Wajib", "Rukun Solat", "Perkara Batal Solat"],
-                correct: 1
+                question: "3. Berapakah jumlah rukun solat semuanya?",
+                options: ["10 perkara", "12 perkara", "13 perkara"],
+                answer: 2
             },
             {
-                q: "Solat apakah yang mempunyai 2 rakaat sahaja?",
-                options: ["Subuh", "Zohor", "Isyak"],
-                correct: 0
+                question: "4. Antara berikut, yang manakah merupakan SYARAT SAH solat?",
+                options: ["Menghadap Kiblat", "Berpuasa", "Membaca Qunut"],
+                answer: 0
             },
             {
-                q: "Apakah hukum menunaikan solat fardhu 5 waktu bagi umat Islam?",
+                question: "5. Berapakah bilangan rakaat bagi solat Subuh?",
+                options: ["2 Rakaat", "3 Rakaat", "4 Rakaat"],
+                answer: 0
+            },
+            {
+                question: "6. Antara perbuatan berikut, yang manakah MEMBATALKAN solat?",
+                options: ["Membaca Al-Fatihah", "Bercakap dengan sengaja", "Tumakninah"],
+                answer: 1
+            },
+            {
+                question: "7. Apakah hukum menunaikan solat fardhu 5 waktu bagi umat Islam?",
                 options: ["Sunat", "Wajib", "Harus"],
-                correct: 1
+                answer: 1
             },
             {
-                q: "Antara berikut, perbuatan manakah yang MEMBATALKAN solat?",
-                options: ["Bercakap dengan sengaja", "Memandang tempat sujud", "Diam"],
-                correct: 0
+                question: "8. Solat fardhu manakah yang mempunyai 4 rakaat?",
+                options: ["Subuh & Maghrib", "Zohor, Asar & Isyak", "Maghrib & Isyak"],
+                answer: 1
             },
             {
-                q: "Kita hendaklah menyucikan diri daripada hadas kecil sebelum solat dengan cara...",
-                options: ["Berwuduk", "Mandi wajib", "Lap tangan"],
-                correct: 0
+                question: "9. Apakah rukun selepas Ruku' dengan tumakninah?",
+                options: ["Sujud", "I'tidal", "Duduk antara dua sujud"],
+                answer: 1
             },
             {
-                q: "Solat fardhu yang dikerjakan pada waktu malam selepas Maghrib ialah...",
-                options: ["Zohor", "Asar", "Isyak"],
-                correct: 2
-            },
-            {
-                q: "Perbuatan sujud dilakukan sebanyak berapa kali dalam setiap rakaat solat?",
-                options: ["1 Kali", "2 Kali", "3 Kali"],
-                correct: 1
+                question: "10. Mengapakah kita perlu menutup aurat sebelum solat?",
+                options: ["Syarat Sah Solat", "Sunat Solat", "Syarat Wajib Solat"],
+                answer: 0
             }
         ];
 
-        // ----------------------------------------------------
-        // 2. WEB AUDIO SYNTHESIZER (NO EXTERNAL ASSETS)
-        // ----------------------------------------------------
-        class AudioSynth {
+        /* ===================================================================
+           2. WEB AUDIO API SYNTHESIZER (NO EXTERNAL AUDIO FILES REQUIRED)
+           =================================================================== */
+        class SoundEngine {
             constructor() {
                 this.ctx = null;
-                this.muted = false;
             }
 
             init() {
                 if (!this.ctx) {
-                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                    if (AudioContextClass) {
-                        this.ctx = new AudioContextClass();
-                    }
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
                 }
-                if (this.ctx && this.ctx.state === 'suspended') {
+                if (this.ctx.state === 'suspended') {
                     this.ctx.resume();
                 }
             }
 
-            playWhoosh() {
-                if (this.muted || !this.ctx) return;
+            // Hover Charging Tone
+            playHoverSound(progress) {
+                if (!this.ctx) return;
                 try {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(450, this.ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(70, this.ctx.currentTime + 0.12);
-                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                    osc.frequency.setValueAtTime(200 + (progress * 600), this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
                     osc.start();
-                    osc.stop(this.ctx.currentTime + 0.12);
-                } catch (e) {}
+                    osc.stop(this.ctx.currentTime + 0.08);
+                } catch(e) {}
             }
 
-            playCorrect() {
-                if (this.muted || !this.ctx) return;
+            // Correct Answer Slash / Chime
+            playCorrectSound() {
+                if (!this.ctx) return;
                 try {
-                    const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-                    freqs.forEach((freq, idx) => {
+                    const now = this.ctx.currentTime;
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    notes.forEach((freq, idx) => {
                         const osc = this.ctx.createOscillator();
                         const gain = this.ctx.createGain();
                         osc.type = 'triangle';
-                        osc.frequency.value = freq;
-                        const t = this.ctx.currentTime + idx * 0.07;
-                        gain.gain.setValueAtTime(0.25, t);
-                        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                        osc.frequency.setValueAtTime(freq, now + (idx * 0.06));
+                        gain.gain.setValueAtTime(0.15, now + (idx * 0.06));
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + (idx * 0.06) + 0.3);
                         osc.connect(gain);
                         gain.connect(this.ctx.destination);
-                        osc.start(t);
-                        osc.stop(t + 0.25);
+                        osc.start(now + (idx * 0.06));
+                        osc.stop(now + (idx * 0.06) + 0.3);
                     });
-                } catch (e) {}
+                } catch(e) {}
             }
 
-            playWrong() {
-                if (this.muted || !this.ctx) return;
+            // Wrong Answer Buzz
+            playWrongSound() {
+                if (!this.ctx) return;
                 try {
+                    const now = this.ctx.currentTime;
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(160, this.ctx.currentTime);
-                    osc.frequency.linearRampToValueAtTime(70, this.ctx.currentTime + 0.3);
-                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.linearRampToValueAtTime(80, now + 0.35);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 0.3);
-                } catch (e) {}
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } catch(e) {}
             }
 
-            playVictory() {
-                if (this.muted || !this.ctx) return;
+            // Telekinetic Slash Swoosh
+            playSlashSound() {
+                if (!this.ctx) return;
                 try {
-                    const notes = [
-                        { f: 523.25, d: 0.15 }, { f: 659.25, d: 0.15 }, { f: 783.99, d: 0.15 },
-                        { f: 1046.50, d: 0.4 }
-                    ];
-                    let t = this.ctx.currentTime;
-                    notes.forEach(note => {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } catch(e) {}
+            }
+
+            // Victory Fanfare
+            playVictorySound() {
+                if (!this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const melody = [440, 554.37, 659.25, 880];
+                    melody.forEach((freq, i) => {
                         const osc = this.ctx.createOscillator();
                         const gain = this.ctx.createGain();
                         osc.type = 'triangle';
-                        osc.frequency.value = note.f;
-                        gain.gain.setValueAtTime(0.3, t);
-                        gain.gain.exponentialRampToValueAtTime(0.001, t + note.d);
+                        osc.frequency.setValueAtTime(freq, now + (i * 0.12));
+                        gain.gain.setValueAtTime(0.2, now + (i * 0.12));
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.12) + 0.4);
                         osc.connect(gain);
                         gain.connect(this.ctx.destination);
-                        osc.start(t);
-                        osc.stop(t + note.d);
-                        t += note.d + 0.04;
+                        osc.start(now + (i * 0.12));
+                        osc.stop(now + (i * 0.12) + 0.4);
                     });
-                } catch (e) {}
+                } catch(e) {}
             }
         }
 
-        const audio = new AudioSynth();
+        const audio = new SoundEngine();
 
-        // ----------------------------------------------------
-        // 3. GAME STATE & SYSTEM VARIABLES
-        // ----------------------------------------------------
+        /* ===================================================================
+           3. CANVAS & PARTICLE SYSTEM
+           =================================================================== */
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const videoElement = document.getElementById('webcamVideo');
+        const videoElement = document.getElementById('webcam');
 
-        let isWebcamMode = true;
-        let cameraInstance = null;
-        let handsInstance = null;
+        let canvasWidth = window.innerWidth;
+        let canvasHeight = window.innerHeight;
 
-        let gameActive = false;
-        let score = 0;
-        let lives = 3;
-        let combo = 0;
-        let maxCombo = 0;
-        let currentQIndex = 0;
-        let timer = 20;
-        let timerInterval = null;
-
-        let userBladePoints = []; // Blade trail history [{x, y, age}]
-        let currentBladePos = { x: -100, y: -100 };
-        let prevBladePos = { x: -100, y: -100 };
-
-        let targets = []; // Floating scroll answer targets
-        let particles = []; // Slice explosion particles
-        let floatingTexts = []; // Pop-up feedback texts (+100, SALAH, etc.)
-        let questionReview = []; // Summary data for results screen
-
-        let currentQuestionObj = null;
-
-        // Colors palette for targets
-        const TARGET_COLORS = [
-            { bg: '#0284c7', border: '#38bdf8', text: '#ffffff' }, // Blue
-            { bg: '#059669', border: '#34d399', text: '#ffffff' }, // Green
-            { bg: '#d97706', border: '#fbbf24', text: '#ffffff' }  // Amber
-        ];
-
-        // ----------------------------------------------------
-        // 4. INITIALIZATION & RESIZING
-        // ----------------------------------------------------
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // UI Event Listeners for Control Mode toggle
-        document.querySelectorAll('input[name="controlMode"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                isWebcamMode = e.target.value === 'webcam';
-                const webcamCard = document.getElementById('modeWebcamCard');
-                const mouseCard = document.getElementById('modeMouseCard');
-                if (isWebcamMode) {
-                    webcamCard.classList.add('border-amber-500');
-                    webcamCard.classList.remove('border-slate-700');
-                    mouseCard.classList.remove('border-amber-500');
-                    mouseCard.classList.add('border-slate-700');
-                } else {
-                    mouseCard.classList.add('border-amber-500');
-                    mouseCard.classList.remove('border-slate-700');
-                    webcamCard.classList.remove('border-amber-500');
-                    webcamCard.classList.add('border-slate-700');
-                }
-            });
+        // Particles Store
+        let particles = [];
+        let slashes = [];
+
+        class Particle {
+            constructor(x, y, color, speedScale = 1) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 6 + 2;
+                this.vx = (Math.random() - 0.5) * 8 * speedScale;
+                this.vy = (Math.random() - 0.5) * 8 * speedScale;
+                this.color = color;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.03 + 0.015;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class SlashEffect {
+            constructor(x1, y1, x2, y2, color) {
+                this.x1 = x1;
+                this.y1 = y1;
+                this.x2 = x2;
+                this.y2 = y2;
+                this.color = color;
+                this.life = 1.0;
+            }
+
+            update() {
+                this.life -= 0.05;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 12 * this.life;
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.x1, this.y1);
+                ctx.lineTo(this.x2, this.y2);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function createExplosion(x, y, color, count = 30) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y, color, 1.5));
+            }
+        }
+
+        /* ===================================================================
+           4. GAME STATE VARIABLES
+           =================================================================== */
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let combo = 1;
+        let maxCombo = 1;
+        let lives = 3;
+        let correctCount = 0;
+        let isGameActive = false;
+        let isQuestionLocked = false;
+
+        let timerValue = 15;
+        let timerInterval = null;
+
+        // Telekinesis Orb Position (Smoothed Lerp)
+        let orbTarget = { x: canvasWidth / 2, y: canvasHeight / 2 };
+        let orbPos = { x: canvasWidth / 2, y: canvasHeight / 2 };
+        let prevOrbPos = { x: canvasWidth / 2, y: canvasHeight / 2 };
+        let isPinching = false;
+
+        // Hover Charge Tracker
+        let hoverCardIndex = -1;
+        let hoverTimer = 0; // seconds
+        const HOVER_THRESHOLD = 1.2; // 1.2s to trigger choice
+
+        /* ===================================================================
+           5. MEDIAPIPE HANDS SETUP
+           =================================================================== */
+        let camera = null;
+        let isCamActive = false;
+
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
         });
 
-        document.getElementById('btnStartGame').addEventListener('click', () => {
-            audio.init();
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('hud').classList.remove('hidden');
-            document.getElementById('topControls').classList.remove('hidden');
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.6,
+            minTrackingConfidence: 0.6
+        });
 
-            if (isWebcamMode) {
-                initWebcamAndMediaPipe();
-            } else {
-                document.getElementById('inputModeBadge').innerHTML = '<i class="fa-solid fa-mouse"></i> Tetikus / Touch';
-                startNewGame();
+        hands.onResults(onHandResults);
+
+        function onHandResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                
+                // Landmark 8: Index Fingertip
+                const indexTip = landmarks[8];
+                // Landmark 4: Thumb Tip
+                const thumbTip = landmarks[4];
+
+                // Mirrored coordinates mapping to canvas
+                orbTarget.x = (1 - indexTip.x) * canvasWidth;
+                orbTarget.y = indexTip.y * canvasHeight;
+
+                // Pinch detection (distance between index tip and thumb tip)
+                const dx = (thumbTip.x - indexTip.x);
+                const dy = (thumbTip.y - indexTip.y);
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                isPinching = (dist < 0.055);
+            }
+        }
+
+        async function initCamera() {
+            const camStatusDot = document.getElementById('camStatusDot');
+            const camStatusText = document.getElementById('camStatusText');
+
+            try {
+                camera = new Camera(videoElement, {
+                    onFrame: async () => {
+                        await hands.send({ image: videoElement });
+                    },
+                    width: 1280,
+                    height: 720
+                });
+                await camera.start();
+                isCamActive = true;
+                camStatusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]";
+                camStatusText.textContent = "Kamera Aktif";
+            } catch (err) {
+                console.warn("Webcam access warning/fallback:", err);
+                isCamActive = false;
+                camStatusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+                camStatusText.textContent = "Mod Tetikus (Mouse)";
+            }
+        }
+
+        /* ===================================================================
+           6. MOUSE & TOUCH FALLBACK
+           =================================================================== */
+        window.addEventListener('mousemove', (e) => {
+            if (!isCamActive) {
+                orbTarget.x = e.clientX;
+                orbTarget.y = e.clientY;
             }
         });
 
-        document.getElementById('btnMute').addEventListener('click', () => {
-            audio.muted = !audio.muted;
-            const icon = document.getElementById('muteIcon');
-            icon.className = audio.muted ? 'fa-solid fa-volume-xmark text-red-400' : 'fa-solid fa-volume-high';
-        });
-
-        document.getElementById('btnReplay').addEventListener('click', () => {
-            document.getElementById('resultScreen').classList.add('hidden');
-            startNewGame();
-        });
-
-        document.getElementById('btnHome').addEventListener('click', () => {
-            document.getElementById('resultScreen').classList.add('hidden');
-            document.getElementById('hud').classList.add('hidden');
-            document.getElementById('startScreen').classList.remove('hidden');
-            gameActive = false;
-        });
-
-        // Mouse & Touch Fallback Input Listeners
-        window.addEventListener('mousemove', (e) => {
-            if (!isWebcamMode && gameActive) {
-                updateBladePosition(e.clientX, e.clientY);
+        window.addEventListener('mousedown', (e) => {
+            if (!isCamActive && isGameActive && !isQuestionLocked) {
+                isPinching = true;
+                setTimeout(() => { isPinching = false; }, 200);
             }
         });
 
         window.addEventListener('touchmove', (e) => {
-            if (!isWebcamMode && gameActive && e.touches.length > 0) {
-                updateBladePosition(e.touches[0].clientX, e.touches[0].clientY);
+            if (!isCamActive && e.touches.length > 0) {
+                orbTarget.x = e.touches[0].clientX;
+                orbTarget.y = e.touches[0].clientY;
             }
         }, { passive: true });
 
-        // ----------------------------------------------------
-        // 5. MEDIAPIPE HANDS & WEBCAM INTEGRATION
-        // ----------------------------------------------------
-        function initWebcamAndMediaPipe() {
-            document.getElementById('inputModeBadge').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyambung Kamera...';
+        /* ===================================================================
+           7. GAME LOGIC & FLOW
+           =================================================================== */
+        const startOverlay = document.getElementById('startOverlay');
+        const endOverlay = document.getElementById('endOverlay');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const toggleCamBtn = document.getElementById('toggleCamBtn');
 
-            if (typeof Hands === 'undefined') {
-                console.warn('MediaPipe Hands not loaded. Falling back to mouse control.');
-                alert('Peringatan: Pustaka MediaPipe tidak ditemui. Kawalan ditukar kepada Tetikus/Skrin Sentuh.');
-                isWebcamMode = false;
-                document.getElementById('inputModeBadge').innerHTML = '<i class="fa-solid fa-mouse"></i> Tetikus / Touch';
-                startNewGame();
-                return;
+        startBtn.addEventListener('click', () => {
+            audio.init();
+            startOverlay.classList.add('hidden');
+            initCamera();
+            startGame();
+        });
+
+        restartBtn.addEventListener('click', () => {
+            audio.init();
+            endOverlay.classList.add('hidden');
+            startGame();
+        });
+
+        toggleCamBtn.addEventListener('click', () => {
+            if (isCamActive && camera) {
+                camera.stop();
+                isCamActive = false;
+                document.getElementById('camStatusDot').className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+                document.getElementById('camStatusText').textContent = "Mod Tetikus";
+            } else {
+                initCamera();
             }
+        });
 
-            handsInstance = new Hands({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-            });
-
-            handsInstance.setOptions({
-                maxNumHands: 1,
-                modelComplexity: 1,
-                minDetectionConfidence: 0.5,
-                minTrackingConfidence: 0.5
-            });
-
-            handsInstance.onResults(onHandResults);
-
-            cameraInstance = new Camera(videoElement, {
-                onFrame: async () => {
-                    if (gameActive && isWebcamMode) {
-                        await handsInstance.send({ image: videoElement });
-                    }
-                },
-                width: 640,
-                height: 480
-            });
-
-            cameraInstance.start().then(() => {
-                document.getElementById('inputModeBadge').innerHTML = '<i class="fa-solid fa-hand"></i> Hand Tracking Active';
-                startNewGame();
-            }).catch((err) => {
-                console.error('Kamera gagal diakses:', err);
-                alert('Akses kamera tidak dibenarkan atau gagal. Mod permainan bertukar kepada Tetikus/Skrin Sentuh.');
-                isWebcamMode = false;
-                document.getElementById('inputModeBadge').innerHTML = '<i class="fa-solid fa-mouse"></i> Tetikus / Touch';
-                startNewGame();
-            });
-        }
-
-        function onHandResults(results) {
-            if (!gameActive || !isWebcamMode) return;
-
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const landmarks = results.multiHandLandmarks[0];
-                // Landmark Index 8 = INDEX_FINGER_TIP
-                const fingerTip = landmarks[8];
-
-                // Mirrored coordinates calculation for intuitive movement
-                const x = (1 - fingerTip.x) * canvas.width;
-                const y = fingerTip.y * canvas.height;
-
-                updateBladePosition(x, y);
-            }
-        }
-
-        function updateBladePosition(x, y) {
-            prevBladePos = { ...currentBladePos };
-            currentBladePos = { x, y };
-
-            // Sound on fast slash movement
-            const dist = Math.hypot(currentBladePos.x - prevBladePos.x, currentBladePos.y - prevBladePos.y);
-            if (dist > 35) {
-                audio.playWhoosh();
-            }
-
-            userBladePoints.push({ x, y, time: Date.now() });
-        }
-
-        // ----------------------------------------------------
-        // 6. GAME LOGIC & QUESTION MANAGEMENT
-        // ----------------------------------------------------
-        function startNewGame() {
+        function startGame() {
+            currentQuestionIndex = 0;
             score = 0;
+            combo = 1;
+            maxCombo = 1;
             lives = 3;
-            combo = 0;
-            maxCombo = 0;
-            currentQIndex = 0;
-            questionReview = [];
-            gameActive = true;
+            correctCount = 0;
+            isGameActive = true;
+            isQuestionLocked = false;
 
             updateHUD();
-            loadQuestion(currentQIndex);
-
-            requestAnimationFrame(gameLoop);
+            loadQuestion(currentQuestionIndex);
         }
 
         function updateHUD() {
-            document.getElementById('scoreText').innerText = score;
-            document.getElementById('comboText').innerText = `x${combo}`;
+            document.getElementById('scoreText').textContent = score;
+            document.getElementById('comboText').textContent = `x${combo}`;
             
-            // Hearts display
-            const heartsContainer = document.getElementById('livesContainer');
-            heartsContainer.innerHTML = '';
+            // Lives Hearts
+            const livesContainer = document.getElementById('livesContainer');
+            livesContainer.innerHTML = '';
             for (let i = 0; i < 3; i++) {
+                const heart = document.createElement('i');
                 if (i < lives) {
-                    heartsContainer.innerHTML += '<i class="fa-solid fa-heart"></i>';
+                    heart.className = 'fa-solid fa-heart text-2xl text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]';
                 } else {
-                    heartsContainer.innerHTML += '<i class="fa-solid fa-heart text-slate-700"></i>';
+                    heart.className = 'fa-solid fa-heart text-2xl text-slate-700';
                 }
+                livesContainer.appendChild(heart);
             }
         }
 
         function loadQuestion(index) {
-            if (index >= QUESTIONS_DATA.length) {
-                endGame(true); // Victory
+            if (index >= quizData.length) {
+                endGame(true);
                 return;
             }
 
-            currentQIndex = index;
-            currentQuestionObj = QUESTIONS_DATA[index];
+            isQuestionLocked = false;
+            hoverCardIndex = -1;
+            hoverTimer = 0;
 
-            document.getElementById('qIndexText').innerText = `${index + 1}`;
-            document.getElementById('questionText').innerText = currentQuestionObj.q;
+            const q = quizData[index];
+            document.getElementById('questionNumBadge').textContent = `Soalan ${index + 1} daripada ${quizData.length}`;
+            document.getElementById('questionText').textContent = q.question;
 
-            // Reset Timer
+            // Option Cards
+            for (let i = 0; i < 3; i++) {
+                const card = document.getElementById(`card-${i}`);
+                card.className = "glass-card option-card rounded-2xl p-5 cursor-pointer flex flex-col justify-between relative overflow-hidden group";
+                const p = card.querySelector('.option-text');
+                p.textContent = q.options[i];
+
+                const pBar = card.querySelector('.hover-progress-bar');
+                if (pBar) pBar.style.width = '0%';
+            }
+
+            // Start Timer
+            startQuestionTimer();
+        }
+
+        function startQuestionTimer() {
             clearInterval(timerInterval);
-            timer = 20;
-            document.getElementById('timerText').innerText = timer;
+            timerValue = 15;
+            updateTimerUI();
+
             timerInterval = setInterval(() => {
-                if (!gameActive) return;
-                timer--;
-                document.getElementById('timerText').innerText = timer;
+                if (!isGameActive || isQuestionLocked) return;
 
-                if (timer <= 0) {
+                timerValue -= 0.1;
+                if (timerValue <= 0) {
+                    timerValue = 0;
+                    updateTimerUI();
                     clearInterval(timerInterval);
-                    handleTimeOut();
+                    handleAnswer(-1); // Timeout
+                } else {
+                    updateTimerUI();
                 }
-            }, 1000);
-
-            // Generate 3 Floating Answer Targets
-            spawnAnswerTargets();
+            }, 100);
         }
 
-        function spawnAnswerTargets() {
-            targets = [];
-            const options = currentQuestionObj.options;
+        function updateTimerUI() {
+            const timerBar = document.getElementById('timerBar');
+            const timerText = document.getElementById('timerText');
 
-            // Positioning targets across the screen width nicely
-            const positionsX = [canvas.width * 0.22, canvas.width * 0.50, canvas.width * 0.78];
-            const baseCenterY = canvas.height * 0.58;
+            const pct = (timerValue / 15) * 100;
+            timerBar.style.width = `${pct}%`;
+            timerText.textContent = `${Math.ceil(timerValue)}s`;
 
-            options.forEach((optText, i) => {
-                const isCorrect = (i === currentQuestionObj.correct);
-                const colorTheme = TARGET_COLORS[i % TARGET_COLORS.length];
-
-                targets.push({
-                    id: i,
-                    text: optText,
-                    badge: String.fromCharCode(65 + i), // 'A', 'B', 'C'
-                    isCorrect: isCorrect,
-                    x: positionsX[i],
-                    y: baseCenterY,
-                    baseY: baseCenterY,
-                    floatOffset: i * 2.0, // Phase shift for floating wave
-                    radius: Math.min(canvas.width * 0.12, 85),
-                    color: colorTheme,
-                    sliced: false,
-                    splitAngle: 0,
-                    splitOffset: 0
-                });
-            });
-        }
-
-        function handleTimeOut() {
-            audio.playWrong();
-            lives--;
-            combo = 0;
-            updateHUD();
-
-            questionReview.push({
-                q: currentQuestionObj.q,
-                userChoice: "Masa Tamat",
-                correctChoice: currentQuestionObj.options[currentQuestionObj.correct],
-                isCorrect: false
-            });
-
-            addFloatingText(canvas.width / 2, canvas.height / 2, "MASA TAMAT!", "#ef4444");
-
-            if (lives <= 0) {
-                endGame(false);
+            if (timerValue <= 5) {
+                timerBar.className = "h-full bg-gradient-to-r from-red-500 to-amber-500 w-full transition-all duration-100 rounded-full animate-pulse";
+                timerText.className = "text-red-400 font-mono text-base font-bold animate-pulse";
             } else {
-                setTimeout(() => {
-                    loadQuestion(currentQIndex + 1);
-                }, 1200);
+                timerBar.className = "h-full bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-500 w-full transition-all duration-100 rounded-full";
+                timerText.className = "text-amber-400 font-mono text-base font-bold";
             }
         }
 
-        function sliceTarget(target) {
-            target.sliced = true;
-            target.splitAngle = Math.atan2(currentBladePos.y - prevBladePos.y, currentBladePos.x - prevBladePos.x);
-
-            // Spawn slice particles
-            createSliceExplosion(target.x, target.y, target.color.border);
-
-            const isCorrect = target.isCorrect;
-
-            questionReview.push({
-                q: currentQuestionObj.q,
-                userChoice: target.text,
-                correctChoice: currentQuestionObj.options[currentQuestionObj.correct],
-                isCorrect: isCorrect
-            });
-
-            if (isCorrect) {
-                combo++;
-                if (combo > maxCombo) maxCombo = combo;
-                const pointsEarned = 100 + (combo * 20);
-                score += pointsEarned;
-
-                audio.playCorrect();
-                addFloatingText(target.x, target.y - 20, `+${pointsEarned} SYABAS!`, '#10b981');
-            } else {
-                combo = 0;
-                lives--;
-                audio.playWrong();
-                addFloatingText(target.x, target.y - 20, "SALAH!", '#ef4444');
-            }
-
-            updateHUD();
+        function handleAnswer(selectedIndex) {
+            if (isQuestionLocked) return;
+            isQuestionLocked = true;
             clearInterval(timerInterval);
 
-            if (lives <= 0) {
-                setTimeout(() => endGame(false), 1200);
-            } else {
-                setTimeout(() => {
-                    loadQuestion(currentQIndex + 1);
-                }, 1300);
-            }
-        }
+            const q = quizData[currentQuestionIndex];
+            const isCorrect = (selectedIndex === q.answer);
 
-        // ----------------------------------------------------
-        // 7. PARTICLES & VISUAL EFFECTS
-        // ----------------------------------------------------
-        function createSliceExplosion(x, y, color) {
-            for (let i = 0; i < 30; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 8 + 2;
-                particles.push({
-                    x, y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    radius: Math.random() * 5 + 2,
-                    color: color,
-                    alpha: 1,
-                    decay: Math.random() * 0.03 + 0.015
-                });
-            }
-        }
+            // Audio & Visual Effects
+            if (selectedIndex >= 0) {
+                const selectedCard = document.getElementById(`card-${selectedIndex}`);
+                const rect = selectedCard.getBoundingClientRect();
+                const cardCenterX = rect.left + rect.width / 2;
+                const cardCenterY = rect.top + rect.height / 2;
 
-        function addFloatingText(x, y, text, color) {
-            floatingTexts.push({
-                x, y, text, color,
-                alpha: 1,
-                scale: 1.2
-            });
-        }
+                // Slash Line
+                slashes.push(new SlashEffect(
+                    orbPos.x - 80, orbPos.y - 80,
+                    orbPos.x + 80, orbPos.y + 80,
+                    isCorrect ? '#22c55e' : '#ef4444'
+                ));
+                audio.playSlashSound();
 
-        // ----------------------------------------------------
-        // 8. MAIN GAME RENDER LOOP
-        // ----------------------------------------------------
-        function gameLoop() {
-            if (!gameActive) return;
+                if (isCorrect) {
+                    selectedCard.classList.add('slashed-correct');
+                    createExplosion(cardCenterX, cardCenterY, '#22c55e', 40);
+                    audio.playCorrectSound();
 
-            // Clear Screen
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    // Score Calculation
+                    const speedBonus = Math.floor(timerValue * 50);
+                    const earnedScore = 1000 + speedBonus * combo;
+                    score += earnedScore;
 
-            // Optional: Draw subtle webcam video background feed overlay
-            if (isWebcamMode && videoElement.readyState === 4) {
-                ctx.save();
-                ctx.globalAlpha = 0.25; // Transparent overlay
-                ctx.translate(canvas.width, 0);
-                ctx.scale(-1, 1); // Mirror
-                ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-                ctx.restore();
-            } else {
-                // Ninja Background Motif Grid
-                ctx.fillStyle = '#0f172a';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
+                    correctCount++;
+                    combo++;
+                    if (combo > maxCombo) maxCombo = combo;
+                } else {
+                    selectedCard.classList.add('slashed-wrong');
+                    createExplosion(cardCenterX, cardCenterY, '#ef4444', 40);
+                    audio.playWrongSound();
 
-            const now = Date.now();
+                    // Show correct card
+                    const correctCard = document.getElementById(`card-${q.answer}`);
+                    correctCard.classList.add('slashed-correct');
 
-            // 1. UPDATE & DRAW BLADE TRAIL
-            userBladePoints = userBladePoints.filter(p => now - p.time < 220);
-
-            if (userBladePoints.length > 1) {
-                ctx.save();
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-
-                for (let i = 1; i < userBladePoints.length; i++) {
-                    const p1 = userBladePoints[i - 1];
-                    const p2 = userBladePoints[i];
-                    const ageRatio = 1 - (now - p2.time) / 220;
-
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.strokeStyle = `rgba(56, 189, 248, ${ageRatio})`;
-                    ctx.lineWidth = ageRatio * 16;
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = '#06b6d4';
-                    ctx.stroke();
+                    lives--;
+                    combo = 1;
                 }
-                ctx.restore();
+            } else {
+                // Timeout
+                audio.playWrongSound();
+                const correctCard = document.getElementById(`card-${q.answer}`);
+                if (correctCard) correctCard.classList.add('slashed-correct');
+                lives--;
+                combo = 1;
             }
 
-            // Draw Fingertip / Blade Point Cursor Indicator
-            if (currentBladePos.x > 0) {
+            updateHUD();
+
+            // Check game over condition
+            setTimeout(() => {
+                if (lives <= 0) {
+                    endGame(false);
+                } else {
+                    currentQuestionIndex++;
+                    loadQuestion(currentQuestionIndex);
+                }
+            }, 1800);
+        }
+
+        function endGame(isWin) {
+            isGameActive = false;
+            clearInterval(timerInterval);
+
+            endOverlay.classList.remove('hidden');
+
+            const endTitle = document.getElementById('endTitle');
+            const endSubtitle = document.getElementById('endSubtitle');
+            const endBadge = document.getElementById('endBadge');
+            const endRankBanner = document.getElementById('endRankBanner');
+
+            const accuracy = Math.round((correctCount / quizData.length) * 100);
+
+            document.getElementById('endFinalScore').textContent = score;
+            document.getElementById('endAccuracy').textContent = `${accuracy}%`;
+            document.getElementById('endMaxCombo').textContent = `x${maxCombo}`;
+
+            if (isWin && lives > 0) {
+                audio.playVictorySound();
+                endTitle.textContent = "TAHNIAH! KEMENANGAN KUIZ!";
+                endTitle.className = "text-3xl md:text-4xl font-black text-amber-300 neon-text-gold";
+                endSubtitle.textContent = "Anda Berjaya Menguasai Telekinesis & Tajuk Solat!";
+                endBadge.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+
+                if (accuracy >= 90) {
+                    endRankBanner.textContent = "Gelar Minda: MAHA GURU TELEKINESIS SOLAT 👑";
+                } else if (accuracy >= 70) {
+                    endRankBanner.textContent = "Gelar Minda: PERWIRA MINDA SOLAT 🌟";
+                } else {
+                    endRankBanner.textContent = "Gelar Minda: PENJEJAK SOLAT TAHUN 2 ⚡";
+                }
+            } else {
+                endTitle.textContent = "CUBA LAGI!";
+                endTitle.className = "text-3xl md:text-4xl font-black text-red-400";
+                endSubtitle.textContent = "Jangan Putus Asa! Ulang Kaji Tajuk Solat & Cuba Lagi.";
+                endBadge.innerHTML = '<i class="fa-solid fa-heart-crack text-red-500"></i>';
+                endRankBanner.textContent = "Gelar Minda: MURID GIGI SOLAT 📖";
+            }
+        }
+
+        /* ===================================================================
+           8. MAIN CANVAS RENDER & HIT-TEST LOOP
+           =================================================================== */
+        function renderLoop() {
+            // Smooth Orb Movement (Lerp)
+            prevOrbPos.x = orbPos.x;
+            prevOrbPos.y = orbPos.y;
+            orbPos.x += (orbTarget.x - orbPos.x) * 0.35;
+            orbPos.y += (orbTarget.y - orbPos.y) * 0.35;
+
+            // Clear Canvas
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            // Draw Webcam Feed (Mirrored Background) if camera is active
+            if (isCamActive && videoElement.readyState >= 2) {
                 ctx.save();
-                ctx.beginPath();
-                ctx.arc(currentBladePos.x, currentBladePos.y, 10, 0, Math.PI * 2);
-                ctx.fillStyle = '#fbbf24';
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = '#f59e0b';
-                ctx.fill();
+                ctx.translate(canvasWidth, 0);
+                ctx.scale(-1, 1);
+                ctx.globalAlpha = 0.35; // Dimmed background feed
+                ctx.drawImage(videoElement, 0, 0, canvasWidth, canvasHeight);
                 ctx.restore();
+            } else {
+                // Cyber Grid Background fallback
+                ctx.fillStyle = '#080a14';
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
             }
 
-            // 2. UPDATE & DRAW TARGETS
-            const bladeSpeed = Math.hypot(currentBladePos.x - prevBladePos.x, currentBladePos.y - prevBladePos.y);
+            // Dark semi-transparent gradient overlay for high contrast UI
+            const overlayGrad = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+            overlayGrad.addColorStop(0, 'rgba(8, 10, 20, 0.7)');
+            overlayGrad.addColorStop(1, 'rgba(15, 23, 42, 0.85)');
+            ctx.fillStyle = overlayGrad;
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-            targets.forEach(target => {
-                if (!target.sliced) {
-                    // Floating sine animation
-                    target.y = target.baseY + Math.sin((now * 0.003) + target.floatOffset) * 18;
+            // Spawn Particles along Orb Trail
+            if (isGameActive) {
+                const trailColor = isPinching ? '#fbbf24' : '#38bdf8';
+                particles.push(new Particle(orbPos.x, orbPos.y, trailColor, 0.5));
+            }
 
-                    // Slice Collision Detection
-                    if (bladeSpeed > 8) {
-                        const distToTarget = Math.hypot(currentBladePos.x - target.x, currentBladePos.y - target.y);
-                        if (distToTarget < target.radius) {
-                            sliceTarget(target);
-                        }
+            // Update & Draw Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw(ctx);
+                if (p.alpha <= 0) particles.splice(i, 1);
+            }
+
+            // Update & Draw Slashes
+            for (let i = slashes.length - 1; i >= 0; i--) {
+                const s = slashes[i];
+                s.update();
+                s.draw(ctx);
+                if (s.life <= 0) slashes.splice(i, 1);
+            }
+
+            // Hit Testing & Hover Charging Logic
+            if (isGameActive && !isQuestionLocked) {
+                let currentHoverCard = -1;
+
+                for (let i = 0; i < 3; i++) {
+                    const card = document.getElementById(`card-${i}`);
+                    if (!card) continue;
+                    const rect = card.getBoundingClientRect();
+
+                    // Check if Orb position is inside option card bounding box
+                    if (orbPos.x >= rect.left && orbPos.x <= rect.right &&
+                        orbPos.y >= rect.top && orbPos.y <= rect.bottom) {
+                        currentHoverCard = i;
+                        card.classList.add('hovered');
+                    } else {
+                        card.classList.remove('hovered');
+                        const pBar = card.querySelector('.hover-progress-bar');
+                        if (pBar) pBar.style.width = '0%';
+                    }
+                }
+
+                if (currentHoverCard !== -1) {
+                    if (hoverCardIndex === currentHoverCard) {
+                        hoverTimer += 0.016; // ~60fps step
+                    } else {
+                        hoverCardIndex = currentHoverCard;
+                        hoverTimer = 0;
+                    }
+
+                    const progress = Math.min(1.0, hoverTimer / HOVER_THRESHOLD);
+                    const targetCard = document.getElementById(`card-${hoverCardIndex}`);
+                    const pBar = targetCard.querySelector('.hover-progress-bar');
+                    if (pBar) pBar.style.width = `${progress * 100}%`;
+
+                    audio.playHoverSound(progress);
+
+                    // Check Hover Charge trigger OR Instant Pinch Slash
+                    if (progress >= 1.0 || isPinching) {
+                        handleAnswer(hoverCardIndex);
                     }
                 } else {
-                    // Split halves animation
-                    target.splitOffset += 6;
+                    hoverCardIndex = -1;
+                    hoverTimer = 0;
                 }
+            }
 
-                // Render Target Scroll
-                drawTargetScroll(target);
-            });
+            // Draw Telekinesis Mind Force Orb
+            if (isGameActive) {
+                ctx.save();
+                
+                // Outer Glow Aura
+                const orbColor = isPinching ? '#fbbf24' : '#38bdf8';
+                const grad = ctx.createRadialGradient(orbPos.x, orbPos.y, 5, orbPos.x, orbPos.y, 45);
+                grad.addColorStop(0, orbColor);
+                grad.addColorStop(0.5, isPinching ? 'rgba(251, 191, 36, 0.4)' : 'rgba(56, 189, 248, 0.4)');
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-            // 3. UPDATE & DRAW PARTICLES
-            particles.forEach((p, index) => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.alpha -= p.decay;
-
-                if (p.alpha <= 0) {
-                    particles.splice(index, 1);
-                } else {
-                    ctx.save();
-                    ctx.globalAlpha = p.alpha;
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-                }
-            });
-
-            // 4. UPDATE & DRAW FLOATING TEXTS
-            floatingTexts.forEach((ft, index) => {
-                ft.y -= 1.5;
-                ft.alpha -= 0.02;
-
-                if (ft.alpha <= 0) {
-                    floatingTexts.splice(index, 1);
-                } else {
-                    ctx.save();
-                    ctx.globalAlpha = ft.alpha;
-                    ctx.font = '900 24px Fredoka, sans-serif';
-                    ctx.fillStyle = ft.color;
-                    ctx.textAlign = 'center';
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = '#000000';
-                    ctx.fillText(ft.text, ft.x, ft.y);
-                    ctx.restore();
-                }
-            });
-
-            requestAnimationFrame(gameLoop);
-        }
-
-        // ----------------------------------------------------
-        // 9. DRAW TARGET BAMBOO SCROLL / ORB
-        // ----------------------------------------------------
-        function drawTargetScroll(target) {
-            ctx.save();
-
-            if (!target.sliced) {
-                // Unsliced Floating Scroll
-                ctx.translate(target.x, target.y);
-
-                // Outer Glowing Ring
+                ctx.fillStyle = grad;
                 ctx.beginPath();
-                ctx.arc(0, 0, target.radius + 6, 0, Math.PI * 2);
-                ctx.fillStyle = target.color.border + '33';
+                ctx.arc(orbPos.x, orbPos.y, 45, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Scroll Circle Body
-                ctx.beginPath();
-                ctx.arc(0, 0, target.radius, 0, Math.PI * 2);
-                ctx.fillStyle = target.color.bg;
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = target.color.border;
-                ctx.fill();
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = target.color.border;
-                ctx.stroke();
-
-                // Option Badge Letter [A, B, C]
-                ctx.beginPath();
-                ctx.arc(-target.radius * 0.6, -target.radius * 0.5, 18, 0, Math.PI * 2);
-                ctx.fillStyle = '#fbbf24';
-                ctx.fill();
-                ctx.font = 'bold 16px Fredoka';
-                ctx.fillStyle = '#0f172a';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(target.badge, -target.radius * 0.6, -target.radius * 0.5);
-
-                // Answer Text Inside Target
-                ctx.font = '700 18px Fredoka, sans-serif';
+                // Core Orb Inner
                 ctx.fillStyle = '#ffffff';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-
-                // Simple Word Wrap for canvas text
-                wrapText(ctx, target.text, 0, 4, target.radius * 1.6, 22);
-
-            } else {
-                // Sliced Halves Flying Away
-                ctx.translate(target.x, target.y);
-
-                // Half 1
-                ctx.save();
-                ctx.translate(-target.splitOffset, -target.splitOffset);
-                ctx.rotate(-0.3);
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = orbColor;
                 ctx.beginPath();
-                ctx.arc(0, 0, target.radius, Math.PI * 0.5, Math.PI * 1.5);
-                ctx.fillStyle = target.color.bg;
+                ctx.arc(orbPos.x, orbPos.y, isPinching ? 12 : 8, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.restore();
 
-                // Half 2
-                ctx.save();
-                ctx.translate(target.splitOffset, target.splitOffset);
-                ctx.rotate(0.3);
-                ctx.beginPath();
-                ctx.arc(0, 0, target.radius, Math.PI * 1.5, Math.PI * 0.5);
-                ctx.fillStyle = target.color.bg;
-                ctx.fill();
+                // Charging Halo Ring if hovering over an answer option
+                if (hoverCardIndex !== -1 && !isPinching) {
+                    const chargePct = Math.min(1.0, hoverTimer / HOVER_THRESHOLD);
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 4;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.arc(orbPos.x, orbPos.y, 25, -Math.PI / 2, (-Math.PI / 2) + (chargePct * Math.PI * 2));
+                    ctx.stroke();
+                }
+
                 ctx.restore();
             }
 
-            ctx.restore();
+            requestAnimationFrame(renderLoop);
         }
 
-        // Helper function for canvas text wrapping
-        function wrapText(context, text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' ');
-            let line = '';
-            let lines = [];
+        // Start Animation Frame Loop
+        requestAnimationFrame(renderLoop);
 
-            for (let n = 0; n < words.length; n++) {
-                const testLine = line + words[n] + ' ';
-                const metrics = context.measureText(testLine);
-                const testWidth = metrics.width;
-                if (testWidth > maxWidth && n > 0) {
-                    lines.push(line);
-                    line = words[n] + ' ';
-                } else {
-                    line = testLine;
-                }
-            }
-            lines.push(line);
-
-            const startY = y - ((lines.length - 1) * lineHeight) / 2;
-            for (let k = 0; k < lines.length; k++) {
-                context.fillText(lines[k].trim(), x, startY + (k * lineHeight));
-            }
-        }
-
-        // ----------------------------------------------------
-        // 10. GAME END & RESULTS SUMMARY
-        // ----------------------------------------------------
-        function endGame(isVictory) {
-            gameActive = false;
-            clearInterval(timerInterval);
-
-            if (isVictory) {
-                audio.playVictory();
-            }
-
-            document.getElementById('hud').classList.add('hidden');
-            document.getElementById('resultScreen').classList.remove('hidden');
-
-            const resultTitle = document.getElementById('resultTitle');
-            if (isVictory) {
-                resultTitle.innerText = "TAHNIAH, NINJA SOLAT!";
-                resultTitle.className = "text-3xl font-black text-amber-400 uppercase tracking-wider mb-1";
-            } else {
-                resultTitle.innerText = "CUBA LAGI, NINJA!";
-                resultTitle.className = "text-3xl font-black text-red-500 uppercase tracking-wider mb-1";
-            }
-
-            // Calculate Accuracy Percentage
-            const correctCount = questionReview.filter(q => q.isCorrect).length;
-            const accuracy = Math.round((correctCount / QUESTIONS_DATA.length) * 100);
-
-            document.getElementById('resScore').innerText = score;
-            document.getElementById('resAccuracy').innerText = `${accuracy}%`;
-            document.getElementById('resMaxCombo').innerText = `${maxCombo}x`;
-
-            // Star Rating Calculation
-            const starContainer = document.getElementById('starContainer');
-            let stars = 1;
-            if (accuracy >= 80) stars = 3;
-            else if (accuracy >= 50) stars = 2;
-
-            starContainer.innerHTML = '';
-            for (let s = 0; s < 3; s++) {
-                if (s < stars) {
-                    starContainer.innerHTML += '<i class="fa-solid fa-star text-amber-400"></i>';
-                } else {
-                    starContainer.innerHTML += '<i class="fa-solid fa-star text-slate-700"></i>';
-                }
-            }
-
-            // Populate Answer Review List
-            const reviewList = document.getElementById('reviewList');
-            reviewList.innerHTML = '';
-
-            questionReview.forEach((item, idx) => {
-                const statusBadge = item.isCorrect
-                    ? '<span class="bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-check"></i> Betul</span>'
-                    : '<span class="bg-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-xmark"></i> Salah</span>';
-
-                reviewList.innerHTML += `
-                    <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex justify-between items-start gap-2">
-                        <div>
-                            <div class="font-bold text-slate-200">${idx + 1}. ${item.q}</div>
-                            <div class="text-[11px] text-slate-400 mt-0.5">Jawapan Anda: <span class="${item.isCorrect ? 'text-emerald-400' : 'text-red-400'} font-semibold">${item.userChoice}</span> | Betul: <span class="text-amber-400 font-semibold">${item.correctChoice}</span></div>
-                        </div>
-                        <div>${statusBadge}</div>
-                    </div>
-                `;
-            });
-        }
     </script>
 </body>
 </html>
